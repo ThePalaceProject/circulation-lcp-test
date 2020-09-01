@@ -1,0 +1,66 @@
+lcp_update_auth:
+  username: {{ getv "/readium/lcpserver/username" }}
+  password: {{ getv "/readium/lcpserver/password" }}
+
+lsd_notify_auth:
+  username: {{ getv "/readium/lcpserver/username" }}
+  password: {{ getv "/readium/lcpserver/password" }}
+
+# LCP Server
+
+profile: {{ getv "/readium/lcpserver/profile" }}
+lcp:
+  host: "0.0.0.0"
+  port: {{ getv "/readium/lcpserver/port" }}
+  public_base_url: {{ getv "/readium/lcpserver/host" }}
+  database: mysql://{{ getv "/readium/database/username" }}:{{ getv "/readium/database/password" }}@tcp({{ getv "/readium/database/host" }}:{{ getv "/readium/database/port" }})/{{ getv "/readium/lcpserver/database" }}?parseTime=true
+  auth_file: /etc/readium/htpasswd
+storage:
+  mode: "s3"
+  endpoint: http://minio:9000
+  bucket: {{ getv "/readium/s3/bucket" }}
+  region: {{ getv "/aws/region" }}
+  access_id: {{ getv "/aws/s3/key" }}
+  secret: {{ getv "/aws/s3/secret" }}
+  disable_ssl: true
+  path_style: true
+  token:
+certificate:
+  cert: "/etc/readium/certificate.pub"
+  private_key: "/etc/readium/certificate.pem"
+license:
+  links:
+    status: http://{{ getv "/readium/lsdserver/hostname" }}/licenses/{license_id}/status
+    hint: http://{{ getv "/cm/hostname" }}/LCP/lcp/hint
+    publication: http://{{ getv "/minio/hostname" }}/{{ getv "/readium/s3/bucket" }}/{publication_id}
+
+
+# LSD Server
+
+lsd:
+  host: "0.0.0.0"
+  port: {{ getv "/readium/lsdserver/port" }}
+  public_base_url: {{ getv "/readium/lsdserver/host" }}
+  database: mysql://{{ getv "/readium/database/username" }}:{{ getv "/readium/database/password" }}@tcp({{ getv "/readium/database/host" }}:{{ getv "/readium/database/port" }})/{{ getv "/readium/lsdserver/database" }}?parseTime=true
+  auth_file: /etc/readium/htpasswd
+  license_link_url: http://{{ getv "/cm/hostname" }}/LCP/lcp/licenses/{license_id}
+license_status:
+  register: true
+  renew: true
+  return: true
+  renting_days: 60
+  renew_days: 7
+
+
+# Frontend Server
+
+frontend:
+  host: "0.0.0.0"
+  port: {{ getv "/readium/frontend/port" }}
+  public_base_url: {{ getv "/readium/frontend/host" }}
+  database: mysql://{{ getv "/readium/database/username" }}:{{ getv "/readium/database/password" }}@tcp({{ getv "/readium/database/host" }}:{{ getv "/readium/database/port" }})/{{ getv "/readium/frontend/database" }}?parseTime=true
+  master_repository: "/opt/readium/files/raw/frontend/uploads"
+  encrypted_repository: "$READIUM_ENC_CONTENT"
+  provider_uri: "https://www.myprovider.org"
+  right_print: 10
+  right_copy: 2000

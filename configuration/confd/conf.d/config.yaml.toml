@@ -1,0 +1,41 @@
+[template]
+src = "config.yaml.tmpl"
+dest = "/configuration/etc/config.yaml"
+keys = [
+  "/aws/region",
+  "/aws/s3/key",
+  "/aws/s3/secret",
+
+  "/readium/s3/bucket",
+
+  "/readium/database/host",
+  "/readium/database/port",
+  "/readium/database/username",
+  "/readium/database/password",
+
+  "/readium/lcpserver/profile",
+  "/readium/lcpserver/host",
+  "/readium/lcpserver/port",
+  "/readium/lcpserver/database",
+  "/readium/lcpserver/username",
+  "/readium/lcpserver/password",
+
+  "/readium/lsdserver/host",
+  "/readium/lsdserver/port",
+  "/readium/lsdserver/database",
+
+  "/readium/frontend/host",
+  "/readium/frontend/port",
+  "/readium/frontend/database",
+
+  "/cm/database/host",
+  "/cm/database/port",
+  "/cm/database/database",
+  "/cm/database/username",
+  "/cm/database/password",
+
+  "/readium/lsdserver/hostname",
+  "/readium/frontend/hostname",
+  "/minio/hostname",
+  "/cm/hostname"
+]

@@ -1,0 +1,66 @@
+lcp_update_auth:
+  username: lcp
+  password: secretpassword
+
+lsd_notify_auth:
+  username: lcp
+  password: secretpassword
+
+# LCP Server
+
+profile: basic
+lcp:
+  host: "0.0.0.0"
+  port: 8989
+  public_base_url: lcpserver
+  database: mysql://root:secretpassword@tcp(mariadb:3306)/lcpserver?parseTime=true
+  auth_file: /etc/readium/htpasswd
+storage:
+  mode: "s3"
+  endpoint: http://minio:9000
+  bucket: encrypted-books
+  region: us-east-2
+  access_id: minioadmin
+  secret: minioadmin
+  disable_ssl: true
+  path_style: true
+  token:
+certificate:
+  cert: "/etc/readium/certificate.pub"
+  private_key: "/etc/readium/certificate.pem"
+license:
+  links:
+    status: http://lsdserver.lcp.hilbertteam.net/licenses/{license_id}/status
+    hint: http://cm.lcp.hilbertteam.net/LCP/lcp/hint
+    publication: http://minio.lcp.hilbertteam.net/encrypted-books/{publication_id}
+
+
+# LSD Server
+
+lsd:
+  host: "0.0.0.0"
+  port: 8990
+  public_base_url: lsdserver
+  database: mysql://root:secretpassword@tcp(mariadb:3306)/lsdserver?parseTime=trueparseTime=true
+  auth_file: /etc/readium/htpasswd
+  license_link_url: http://cm.lcp.hilbertteam.net/LCP/lcp/licenses/{license_id}
+license_status:
+  register: true
+  renew: true
+  return: true
+  renting_days: 60
+  renew_days: 7
+
+
+# Frontend Server
+
+frontend:
+  host: "0.0.0.0"
+  port: 8991
+  public_base_url: testfrontend
+  database: mysql://root:secretpassword@tcp(mariadb:3306)/testfrontend?parseTime=trueparseTime=true
+  master_repository: "/opt/readium/files/raw/frontend/uploads"
+  encrypted_repository: "$READIUM_ENC_CONTENT"
+  provider_uri: "https://www.myprovider.org"
+  right_print: 10
+  right_copy: 2000

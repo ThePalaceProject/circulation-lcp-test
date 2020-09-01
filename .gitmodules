@@ -1,0 +1,9 @@
+[submodule "elasticsearch"]
+	path = elasticsearch
+	url = https://github.com/vbessonov/circulation-elasticsearch
+[submodule "lcp-docker"]
+	path = lcp-docker
+	url = https://github.com/amigoslibraryservices/lcp-docker
+[submodule "lcp-collection"]
+	path = lcp-collection
+	url = https://github.com/vbessonov/circulation-lcp-collection.git

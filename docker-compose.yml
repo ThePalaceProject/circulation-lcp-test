@@ -1,0 +1,199 @@
+version: "3.6"
+
+networks:
+  front:
+    driver: bridge
+  back:
+    driver: bridge
+
+volumes:
+  es-data:
+  postgres-data:
+  mariadb-data:
+  lcp-data:
+  ldap-data:
+  ldap-config:
+  intermediate-repository:
+  ldap-logs:
+  uwsgi-logs:
+  testfrontend-rawfiles:
+  testfrontend-encfiles:
+
+services:
+  configuration:
+    build: ./configuration/
+    image: configuration:latest
+    environment:
+      AWS_REGION:
+      AWS_S3_USER:
+      AWS_S3_KEY:
+      AWS_S3_SECRET:
+
+      READIUM_S3_BUCKET:
+
+      READIUM_DATABASE_HOST:
+      READIUM_DATABASE_PORT:
+      READIUM_DATABASE_USERNAME:
+      READIUM_DATABASE_PASSWORD:
+
+      READIUM_LCPSERVER_PROFILE:
+      READIUM_LCPSERVER_HOST:
+      READIUM_LCPSERVER_PORT:
+      READIUM_LCPSERVER_DATABASE:
+      READIUM_LCPSERVER_USERNAME:
+      READIUM_LCPSERVER_PASSWORD:
+
+      READIUM_LSDSERVER_HOST:
+      READIUM_LSDSERVER_PORT:
+      READIUM_LSDSERVER_DATABASE:
+
+      READIUM_FRONTEND_HOST:
+      READIUM_FRONTEND_PORT:
+      READIUM_FRONTEND_DATABASE:
+
+      CM_DATABASE_HOST:
+      CM_DATABASE_PORT:
+      CM_DATABASE_DATABASE:
+      CM_DATABASE_USERNAME:
+      CM_DATABASE_PASSWORD:
+
+      READIUM_LSDSERVER_HOSTNAME:
+      READIUM_FRONTEND_HOSTNAME:
+      MINIO_HOSTNAME:
+      CM_HOSTNAME:
+    volumes:
+      - type: bind
+        source: ./configuration/confd
+        target: /etc/confd
+      - type: bind
+        source: ./lcp-docker/base-local/.
+        target: /configuration
+
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${CM_DATABASE_DATABASE}
+      POSTGRES_USER: ${CM_DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${CM_DATABASE_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - back
+
+  es:
+    build: ./elasticsearch
+    image: elasticsearch:development
+    restart: always
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    networks:
+      - back
+
+  cm:
+    image: viacheslavbessonov/circ-webapp:lcp
+    restart: always
+    expose:
+      - "80"
+    depends_on:
+      - postgres
+      - es
+    environment:
+      SIMPLIFIED_PRODUCTION_DATABASE: postgres://${CM_DATABASE_USERNAME}:${CM_DATABASE_PASSWORD}@${CM_DATABASE_HOST}:${CM_DATABASE_PORT}/${CM_DATABASE_DATABASE}
+    volumes:
+      - uwsgi-logs:/var/log/uwsgi
+    networks:
+      back:
+        aliases:
+          - ${CM_HOSTNAME}
+
+  mariadb:
+    build: ./lcp-docker/base-local/database
+    image: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${READIUM_DATABASE_PASSWORD}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    networks:
+      - back
+
+  minio:
+    image: minio/minio
+    environment:
+      MINIO_ACCESS_KEY: ${AWS_S3_KEY}
+      MINIO_SECRET_KEY: ${AWS_S3_SECRET}
+    command: ["server", "/data"]
+    networks:
+      - back
+
+  lcpserver:
+    build:
+      context: ./lcp-docker/base-local/.
+      target: lcpserver
+    image: readium/lcpserver:development
+    restart: always
+    depends_on:
+      - configuration
+      - mariadb
+      - minio
+    volumes:
+      - intermediate-repository:/opt/readium/files
+      - ./lcp-docker/base-local/etc:/etc/readium
+    networks:
+      - back
+
+  lsdserver:
+    build:
+      context: ./lcp-docker/base-local/.
+      target: lsdserver
+    image: readium/lsdserver:working
+    restart: always
+    depends_on:
+      - mariadb
+    volumes:
+      - ./lcp-docker/base-local/etc:/etc/readium
+    networks:
+      - back
+
+  testfrontend:
+    build:
+      context: ./lcp-docker/base-local/.
+      target: testfrontend
+    image: readium/testfrontend:working
+    restart: always
+    depends_on:
+      - configuration
+      - mariadb
+      - lcpserver
+      - lsdserver
+    volumes:
+      - ./lcp-docker/base-local/etc:/etc/readium
+      - testfrontend-rawfiles:/opt/readium/files/raw
+      - testfrontend-encfiles:/opt/readium/files/encrypted
+    networks:
+      - back
+
+  proxy:
+    build: ./proxy
+    image: proxy:latest
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - lsdserver
+      - testfrontend
+      - minio
+      - cm
+    environment:
+      READIUM_LSDSERVER_HOSTNAME:
+      READIUM_FRONTEND_HOSTNAME:
+      MINIO_HOSTNAME:
+      CM_HOSTNAME:
+    networks:
+      - front
+      - back
