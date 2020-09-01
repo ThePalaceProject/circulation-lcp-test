@@ -20,9 +20,9 @@ volumes:
   testfrontend-encfiles:
 
 services:
-  configuration:
-    build: ./configuration/
-    image: configuration:latest
+  lcp-conf:
+    build: ./lcp-docker-conf/
+    image: lcp-conf:development
     environment:
       AWS_REGION:
       AWS_S3_USER:
@@ -63,11 +63,11 @@ services:
       CM_HOSTNAME:
     volumes:
       - type: bind
-        source: ./configuration/confd
+        source: ./lcp-docker-conf/confd
         target: /etc/confd
       - type: bind
         source: ./lcp-docker/base-local/.
-        target: /configuration
+        target: /lcp-conf
 
   postgres:
     image: postgres
@@ -138,7 +138,7 @@ services:
     image: readium/lcpserver:development
     restart: always
     depends_on:
-      - configuration
+      - lcp-conf
       - mariadb
       - minio
     volumes:
@@ -155,6 +155,8 @@ services:
     restart: always
     depends_on:
       - mariadb
+      - lcp-conf
+      - lcpserver
     volumes:
       - ./lcp-docker/base-local/etc:/etc/readium
     networks:
@@ -167,8 +169,8 @@ services:
     image: readium/testfrontend:working
     restart: always
     depends_on:
-      - configuration
       - mariadb
+      - lcp-conf
       - lcpserver
       - lsdserver
     volumes:

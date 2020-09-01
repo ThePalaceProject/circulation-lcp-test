@@ -1,6 +1,6 @@
 [template]
 src = "config.yaml.tmpl"
-dest = "/configuration/etc/config.yaml"
+dest = "/lcp-conf/etc/config.yaml"
 keys = [
   "/aws/region",
   "/aws/s3/key",
