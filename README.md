@@ -13,13 +13,19 @@ Project consists of the following modules:
 ## Usage
 
 ### Preparing the local environment
-1. Update the following host names in [.env](./.env) file:
+1. Update all the submodules:
+```bash
+git submodule init
+git submodule update --remote --recursive
+```
+
+2. Update the following host names in [.env](./.env) file:
 - READIUM_LSDSERVER_HOSTNAME
 - READIUM_FRONTEND_HOSTNAME
 - MINIO_HOSTNAME
 - CM_HOSTNAME
 
-2. Replace all the host names with `127.0.0.1` in `etc/hosts` file:
+3. Replace all the host names with `127.0.0.1` in `etc/hosts` file:
 ```
 127.0.0.1     lsdserver.lcp.hilbertteam.net
 127.0.0.1     testfrontend.lcp.hilbertteam.net
@@ -27,27 +33,27 @@ Project consists of the following modules:
 127.0.0.1     cm.lcp.hilbertteam.net
 ```
 
-3. Build the images:
+4. Build the images:
 ```bash
 docker-compose build
 ```
 
-4. Run `lcp-conf` first to generate configuration required by `lcpserver`, `lsdserver`, and `testfrontend`:
+5. Run `lcp-conf` first to generate configuration required by `lcpserver`, `lsdserver`, and `testfrontend`:
 ```bash
 docker-compose run lcp-conf
 ```
 
-5. Run all the containers:
+6. Run all the containers:
 ```bash
 docker-compose up -d
 ```
 
-6. Use `docker-compose ps` to confirm that all the containers started successfully. It may take some time for `mariadb` to start which can negatively affect `lcpserver`, `lsdserver`, and `testfrontend`. In this case wait until `mariadb` finishes the initialization process (you can check the logs using `docker-compose logs mariadb`) and then start all the remaining containers:
+7. Use `docker-compose ps` to confirm that all the containers started successfully. It may take some time for `mariadb` to start which can negatively affect `lcpserver`, `lsdserver`, and `testfrontend`. In this case wait until `mariadb` finishes the initialization process (you can check the logs using `docker-compose logs mariadb`) and then start all the remaining containers:
 ```bash
 docker-compose up -d
 ```
 
-7. Make sure that Elasticsearch started correctly. Sometimes when the disk capacity is low, Elasticsearch marks shards as read-only which doesn't allow to use it properly.
+8. Make sure that Elasticsearch started correctly. Sometimes when the disk capacity is low, Elasticsearch marks shards as read-only which doesn't allow to use it properly.
 Check the logs using `docker-compose logs es` and if you see something suspicious execute the following requests to fix it:
 ```bash
 curl -XPUT -H "Content-Type: application/json" http://localhost:9200/_cluster/settings -d '{ "transient": { "cluster.routing.allocation.disk.threshold_enabled": false } }'
