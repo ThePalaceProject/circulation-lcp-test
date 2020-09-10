@@ -58,6 +58,7 @@ docker-compose up -d
 8. Make sure that Elasticsearch started correctly. Sometimes when the disk capacity is low, Elasticsearch marks shards as read-only which doesn't allow to use it properly.
 Check the logs using `docker-compose logs es` and if you see something suspicious execute the following requests to fix it:
 ```bash
+docker-compose exec es bash
 curl -XPUT -H "Content-Type: application/json" http://localhost:9200/_cluster/settings -d '{ "transient": { "cluster.routing.allocation.disk.threshold_enabled": false } }'
 curl -XPUT -H "Content-Type: application/json" http://localhost:9200/_all/_settings -d '{"index.blocks.read_only_allow_delete": null}'
 ```
@@ -151,3 +152,12 @@ docker-compose -f docker-compose.yml -f docker-compose.import.yml run import
 
 7. Enjoy the book in Thorium Reader:
   ![LCP book opened in Thorium Reader](docs/17-LCP-book-opened-in-Thorium-Reader.png "LCP book opened in Thorium Reader")
+
+
+## Troubleshooting
+If a list of the books you see in Circulation Manager is outdated or simply wrong you may have to truncate cached feeds in CM's database. To do that please execute the following steps:
+```bash
+docker exec -it circulation-lcp-test_postgres_1 bash
+psql -U simplified simplified_circulation_dev  # Please use the credentials from .env file
+truncate cachedfeeds;
+```
