@@ -33,14 +33,14 @@ git submodule update --remote --recursive
 127.0.0.1     cm.lcp.hilbertteam.net
 ```
 
+3. Run `lcp-conf` first to generate configuration required by `lcpserver`, `lsdserver`, and `testfrontend`:
+```bash
+docker-compose run lcp-conf
+```
+
 4. Build the images:
 ```bash
 docker-compose build
-```
-
-5. Run `lcp-conf` first to generate configuration required by `lcpserver`, `lsdserver`, and `testfrontend`:
-```bash
-docker-compose run lcp-conf
 ```
 
 6. Run all the containers:
