@@ -95,7 +95,7 @@ services:
       - back
 
   cm:
-    image: viacheslavbessonov/circ-webapp:lcp
+    image: nypl/circ-webapp:development
     restart: always
     expose:
       - "80"
