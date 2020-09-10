@@ -59,6 +59,10 @@ Check the logs using `docker-compose logs es` and if you see something suspiciou
 curl -XPUT -H "Content-Type: application/json" http://localhost:9200/_cluster/settings -d '{ "transient": { "cluster.routing.allocation.disk.threshold_enabled": false } }'
 curl -XPUT -H "Content-Type: application/json" http://localhost:9200/_all/_settings -d '{"index.blocks.read_only_allow_delete": null}'
 ```
+Also, sometimes Elasticsearch [keeps failing because of OOM even though there is enough RAM](https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html). In this case please try to increase `vm.max_map_count`:
+```bash
+sysctl -w vm.max_map_count=262144
+```
 
 ### Setting up a MinIO instance
 1. Log into MinIO's administrative interface located at `MINIO_HOSTNAME` using `AWS_S3_KEY` and `AWS_S3_SECRET` defined in [.env](./.env) file as credentials:
