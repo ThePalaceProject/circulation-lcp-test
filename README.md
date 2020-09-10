@@ -43,6 +43,8 @@ docker-compose run lcp-conf
 docker-compose build
 ```
 
+> :warning: Please note that this testbed uses *development* version of `nypl/circ-webapp` and [custom version](https://hub.docker.com/r/viacheslavbessonov/circ-exec) of `circ-exec` Docker images.
+
 6. Run all the containers:
 ```bash
 docker-compose up -d
